@@ -1,0 +1,113 @@
+<!doctype html>
+<html><head>
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+	<style type='text/css'>
+		html { font-family:Helvetica; color:#222; }
+		h1 { color:steelblue; font-size:24px; margin-top:24px; }
+		button { margin:0 3px 10px; font-size:12px; }
+		.logLine { border-bottom:1px solid #ccc; padding:4px 2px; font-family:courier; font-size:11px; }
+	</style>
+    
+    <script type="text/javascript" src="openpgp.js"></script>
+    <script type="text/javascript" src="openpgp.min.js"></script>
+    <script type="text/javascript" src="openpgp.worker.js"></script>
+    <script type="text/javascript" src="openpgp.worker.min.js"></script>
+    
+</head><body>
+	<h1>WebViewJavascriptBridge Demo</h1>
+    
+    
+    <script>
+	window.onerror = function(err) {
+		log('window.onerror: ' + err)
+	}
+    
+    function setupWebViewJavascriptBridge(callback) {
+        if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
+        if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
+        window.WVJBCallbacks = [callback];
+        var WVJBIframe = document.createElement('iframe');
+        WVJBIframe.style.display = 'none';
+        // for v6.0
+        WVJBIframe.src = 'https://__bridge_loaded__';
+        // For v5.0
+        //WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
+        document.documentElement.appendChild(WVJBIframe);
+        setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
+    }
+    
+    setupWebViewJavascriptBridge(function(bridge) {
+		var uniqueId = 1
+		function log(message, data) {
+			var log = document.getElementById('log')
+			var el = document.createElement('div')
+			el.className = 'logLine'
+			el.innerHTML = uniqueId++ + '. ' + message + ':<br/>' + JSON.stringify(data)
+			if (log.children.length) { log.insertBefore(el, log.children[0]) }
+			else { log.appendChild(el) }
+		}
+                                 
+        bridge.registerHandler('pgpEncryptionHandler', function(data, responseCallback) {
+                               
+                               
+            log('ObjC called encryptionHandler with', data)
+             
+            var pubkey = data["pgp_public_key"];
+            var message = data["message"];
+             
+            //openpgp.destroyWorker();
+            openpgp.initWorker({ path:'openpgp.worker.js' })
+            
+            log('Start encryption ','')
+            
+            var options, encrypted;
+                               
+            options = {
+                        data: message,                             // input as String (or Uint8Array)
+                        publicKeys: openpgp.key.readArmored(pubkey).keys //,  // for encryption
+ //                       privateKeys: privKeyObj // for signing (optional)
+                    };
+                               
+            openpgp.encrypt(options).then(function(ciphertext) {
+                        encrypted = ciphertext.data; // '-----BEGIN PGP MESSAGE ... END PGP MESSAGE-----'
+                        responseCallback(encrypted)
+                        log('End encryption 1',encrypted)
+                });
+                               
+        })
+
+        bridge.registerHandler('pgpDecryptionHandler', function(data, responseCallback) {
+            var privkey = data["pgp_private_key"];
+            var passphrase = data["pgp_passphrase"];
+            var message = data["message"];
+              
+           // openpgp.initWorker({ path:'openpgp.worker.js' })
+            try {
+                               
+                log('Start decryption ','')
+                var privKeyObj = openpgp.key.readArmored(privkey).keys[0];
+                   
+                privKeyObj.decrypt(passphrase);
+                    
+                message = openpgp.message.readArmored(message);
+                               
+                var options, decrypted;
+                               
+                options = {
+                            message: message,
+                            privateKey: privKeyObj // for decryption
+                        };
+                               
+                openpgp.decrypt(options).then(function(plaintext) {
+                    responseCallback(plaintext.data)
+                });
+                } catch (err) {
+                    log('Error ', err.message)
+                }
+        })
+                                 
+		document.body.appendChild(document.createElement('br'))
+	})
+	</script>
+	<div id='buttons'></div> <div id='log'></div>
+</body></html>

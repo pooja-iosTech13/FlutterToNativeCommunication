@@ -68,6 +68,18 @@
       "languageVersion": "2.2"
     },
     {
+      "name": "http",
+      "rootUri": "file:///Users/pooja.singh/flutter/.pub-cache/hosted/pub.dartlang.org/http-0.12.0+4",
+      "packageUri": "lib/",
+      "languageVersion": "2.4"
+    },
+    {
+      "name": "http_parser",
+      "rootUri": "file:///Users/pooja.singh/flutter/.pub-cache/hosted/pub.dartlang.org/http_parser-3.1.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.3"
+    },
+    {
       "name": "image",
       "rootUri": "file:///Users/pooja.singh/flutter/.pub-cache/hosted/pub.dartlang.org/image-2.1.4",
       "packageUri": "lib/",
@@ -176,7 +188,7 @@
       "languageVersion": "2.1"
     }
   ],
-  "generated": "2020-04-20T16:08:37.092919Z",
+  "generated": "2020-04-21T10:02:24.247227Z",
   "generator": "pub",
   "generatorVersion": "2.7.0"
 }
