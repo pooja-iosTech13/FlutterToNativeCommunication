@@ -70,7 +70,7 @@ NSString *const channelName = @"com.LW2/app";
         [window addSubview:webView];
     }
     
-   // [WebViewJavascriptBridge enableLogging];
+    [WebViewJavascriptBridge enableLogging];
     WebViewJavascriptBridge* bridge = [WebViewJavascriptBridge bridgeForWebView:webView];
     
     [bridge registerHandler:@"pgpEncryptionCallback" handler:^(id data, WVJBResponseCallback responseCallback) {
